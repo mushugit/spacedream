@@ -21,6 +21,8 @@ public class WorldService : IWorldService
     private readonly IBuildService _buildService;
     private TimeSpan _mapGenerationTime;
 
+    private Point baseCenter;
+
     public Size Size
     {
         get
@@ -55,16 +57,28 @@ public class WorldService : IWorldService
         Debug.Log($"Generating map of size {size}");
         mapStopwatch.Start();
 
+        //Default Center
+        baseCenter = new Point(0, 0);
+
         foreach (var generator in _worldGeneratorServices)
         {
-            generator.Generate(this, true);
+            generator.Generate(this, true); 
+            if (generator is IWorldGeneratorBaseService)
+            {
+                var baseGenerator = generator as IWorldGeneratorBaseService;
+                baseCenter = baseGenerator.Center;
+            }
         }
 
         mapStopwatch.Stop();
         _mapGenerationTime = mapStopwatch.Elapsed;
 
         Debug.Log($"Map generated in {_mapGenerationTime}");
+    }
 
+    public Point BaseCenter
+    {
+        get { return baseCenter; }
     }
 
     private void InitializeMap(Size size)

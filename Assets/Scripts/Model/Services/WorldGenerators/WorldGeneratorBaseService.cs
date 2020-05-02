@@ -15,7 +15,7 @@ using Random = UnityEngine.Random;
 
 namespace Assets.Scripts.Model.Services.WorldGenerators
 {
-    class WorldGeneratorBaseService : IWorldGeneratorService
+    class WorldGeneratorBaseService : IWorldGeneratorService, IWorldGeneratorBaseService
     {
         private readonly IMapDataService _mapService;
         private readonly IBuildService _buildService;
@@ -27,7 +27,11 @@ namespace Assets.Scripts.Model.Services.WorldGenerators
         {
             _mapService = mapService;
             _buildService = buildService;
+
+            Center = new Point(0, 0);
         }
+
+        public Point Center { get; private set; }
 
         public void Generate(IWorldService worldservice, bool debugGeneratorTime)
         {
@@ -46,7 +50,13 @@ namespace Assets.Scripts.Model.Services.WorldGenerators
             var lengthX = Random.Range(4, 25);
             var baseEndX = baseStartX + lengthX;
 
+            var baseMiddleX = Mathf.RoundToInt(baseStartX + (lengthX / 2f));
+
             var baseEndY = Mathf.RoundToInt(BaseArea / lengthX) + baseStartY;
+
+            var baseMiddleY = Mathf.RoundToInt(baseStartY + ((baseEndY - baseStartY) / 2f));
+
+            Center = new Point(baseMiddleX, baseMiddleY);
 
             for (var x = 0; x < _mapService.Size.Width; x++)
             {

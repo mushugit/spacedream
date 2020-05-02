@@ -17,6 +17,7 @@ namespace Assets.Scripts.Model.Interfaces.Services
         ITile GetTileAt(Point coord);
         Point GetTileCoord(ITileView tile);
         Size GetMapSize();
+        Point WorldCenter { get; }
         bool Build(Point coord, TileContentType content, Size footprint);
         void SubscribeAllTileTypeChanged(EventHandler<TileTypeChangedEventArgs> tileTypeChangedEventHandler);
         void SubscribeAllTileContentChanged(EventHandler<TileContentChangedEventArgs> tileContentChangedEventHandler);

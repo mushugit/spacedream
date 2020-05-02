@@ -20,5 +20,6 @@ namespace Assets.Scripts.Model.Interfaces
         void SubscribeAllTileTypeChanged(EventHandler<TileTypeChangedEventArgs> tileTypeChangedEventHandler);
         void SubscribeAllTileContentChanged(EventHandler<TileContentChangedEventArgs> tileContentChangedEventHandler);
 
+        Point BaseCenter { get; }
     }
 }

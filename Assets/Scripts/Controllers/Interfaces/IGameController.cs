@@ -16,6 +16,7 @@ namespace Assets.Scripts.Controllers.Interfaces
         ITileView GetTileAt(Point coord);
         Point GetTileCoord(ITileView tile);
         Size GetMapSize();
+        Point WorldCenter { get; }
         bool Playing { get; }
         void SubscribeAllTileTypeChanged(EventHandler<TileTypeChangedEventArgs> tileTypeChangedEventHandler);
         void SubscribeAllTileContentChanged(EventHandler<TileContentChangedEventArgs> tileContentChangedEventHandler);

@@ -22,6 +22,11 @@ namespace Assets.Scripts.Model.Services
 
         public bool BuildMode { get; private set; }
 
+        public Point WorldCenter
+        {
+            get { return _worldService.BaseCenter; }
+        }
+
         public GameService(IEventService eventService, IWorldService worldService)
         {
             _eventService = eventService;
@@ -31,11 +36,12 @@ namespace Assets.Scripts.Model.Services
         public void Play()
         {
             Debug.Log("Playing game !");
-            _worldService.GenerateMap(new Size(255, 255), 1337);
+            _worldService.GenerateMap(new Size(255, 255), 42);
             //_worldService.GenerateMapFromHeightmap(new Size(255, 255), 1337, $"standard_heightmap");
 
             Playing = true;
         }
+
 
         public void SubscribeAllTileTypeChanged(EventHandler<TileTypeChangedEventArgs> tileTypeChangedEventHandler)
         {

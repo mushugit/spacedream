@@ -38,6 +38,11 @@ namespace Assets.Scripts.Controllers
             }
         }
 
+        public Point WorldCenter
+        {
+            get { return _gameservice.WorldCenter; }
+        }
+
         public void SubscribeAllTileTypeChanged(EventHandler<TileTypeChangedEventArgs> tileTypeChangedEventHandler)
         {
             _gameservice.SubscribeAllTileTypeChanged(tileTypeChangedEventHandler);

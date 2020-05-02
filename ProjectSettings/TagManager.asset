@@ -41,3 +41,6 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: TileUI
+    uniqueID: 2957158771
+    locked: 0
