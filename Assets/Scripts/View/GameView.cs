@@ -83,7 +83,7 @@ public class GameView : MonoBehaviour, IGameWaiter, IGameView
     {
         var tileData = _game.GetTileAt(coord);
         //Create content
-        var worldPosition = new Vector2(coord.X + 0.5f, coord.Y + .5f);
+        var worldPosition = new Vector3(coord.X + 0.5f, coord.Y + .5f, 1f);
         GameObject gameObject = null;
 
         //TODO:Get sprite from type dynamically

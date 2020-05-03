@@ -68,7 +68,7 @@ namespace Assets.Scripts.Controllers
             return _gameservice.GetMapSize();
         }
 
-        private bool Build(Point coord, TileContentType content, Size footprint)
+        public bool Build(Point coord, TileContentType content, Size footprint)
         {
             return _gameservice.Build(coord, content, footprint);
         }

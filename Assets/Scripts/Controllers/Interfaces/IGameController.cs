@@ -20,5 +20,6 @@ namespace Assets.Scripts.Controllers.Interfaces
         bool Playing { get; }
         void SubscribeAllTileTypeChanged(EventHandler<TileTypeChangedEventArgs> tileTypeChangedEventHandler);
         void SubscribeAllTileContentChanged(EventHandler<TileContentChangedEventArgs> tileContentChangedEventHandler);
+        bool Build(Point coord, TileContentType content, Size footprint);
     }
 }
