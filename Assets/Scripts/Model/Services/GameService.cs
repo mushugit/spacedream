@@ -1,14 +1,17 @@
-﻿using Assets.Scripts.Model.Interfaces;
+﻿using Assets.Scripts.Model.Data.Jobs.Parameters;
+using Assets.Scripts.Model.Interfaces;
 using Assets.Scripts.Model.Interfaces.Data;
 using Assets.Scripts.Model.Interfaces.Services;
 using Assets.Scripts.View.Interfaces;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static Assets.Scripts.Model.Data.Job;
 using static Tile;
 
 namespace Assets.Scripts.Model.Services
@@ -17,6 +20,7 @@ namespace Assets.Scripts.Model.Services
     {
         private readonly IWorldService _worldService;
         private readonly IEventService _eventService;
+        private readonly IJobHandlerService _jobHandlerService;
 
         public bool Playing { get; private set; } = false;
 
@@ -27,10 +31,11 @@ namespace Assets.Scripts.Model.Services
             get { return _worldService.BaseCenter; }
         }
 
-        public GameService(IEventService eventService, IWorldService worldService)
+        public GameService(IEventService eventService, IWorldService worldService, IJobHandlerService jobHandlerService)
         {
             _eventService = eventService;
             _worldService = worldService;
+            _jobHandlerService = jobHandlerService;
         }
 
         public void Play()
@@ -70,7 +75,14 @@ namespace Assets.Scripts.Model.Services
 
         public bool Build(Point coord, TileContentType content, Size footprint)
         {
-            return _worldService.Build(coord, content, footprint);
+            //return _worldService.Build(coord, content, footprint);
+            _jobHandlerService.QueueJob(JobCategory.Build, new BuildJobParameter(coord, content));
+            return true;
+        }
+
+        public IEnumerator ExecuteJobs()
+        {
+            yield return _jobHandlerService.ExecuteQueues();
         }
     }
 }

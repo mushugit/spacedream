@@ -1,6 +1,7 @@
 ﻿using Assets.Scripts.Model.Interfaces.Data;
 using Assets.Scripts.View.Interfaces;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -21,5 +22,6 @@ namespace Assets.Scripts.Model.Interfaces.Services
         bool Build(Point coord, TileContentType content, Size footprint);
         void SubscribeAllTileTypeChanged(EventHandler<TileTypeChangedEventArgs> tileTypeChangedEventHandler);
         void SubscribeAllTileContentChanged(EventHandler<TileContentChangedEventArgs> tileContentChangedEventHandler);
+        IEnumerator ExecuteJobs();
     }
 }

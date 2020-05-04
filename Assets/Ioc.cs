@@ -22,6 +22,7 @@ namespace Assets
             //Singleton Services
             container.RegisterSingleton<IWorldService, WorldService>();
             container.RegisterSingleton<IBuildService, BuildService>();
+            container.RegisterSingleton<IJobHandlerService, JobHandlerService>();
 
             //Data services
             container.RegisterSingleton<IMapDataService, MapDataService>();

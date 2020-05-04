@@ -28,6 +28,8 @@ namespace Assets.Scripts.Controllers
             _gameservice = Container.GetInstance<IGameService>();
 
             _gameservice.Play();
+
+            StartCoroutine(_gameservice.ExecuteJobs());
         }
 
         public bool Playing
