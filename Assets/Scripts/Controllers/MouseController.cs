@@ -1,11 +1,10 @@
 ﻿using Assets.Scripts.Controllers;
 using Assets.Scripts.Controllers.Interfaces;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using UnityEngine;
 using static Tile;
+using Color = UnityEngine.Color;
 
 public class MouseController : MonoBehaviour
 {
@@ -28,6 +27,8 @@ public class MouseController : MonoBehaviour
 
     private List<GameObject> dragCursors;
 
+    private readonly Color controlColor = new Color(0.7764706f, 0.2117647f, 0.2117647f);
+
     void Awake()
     {
         _game = GetComponentInParent<GameController>() as IGameController;
@@ -42,7 +43,7 @@ public class MouseController : MonoBehaviour
     {
         position.z = 0;
 
-        position.x = Mathf.RoundToInt(position.x+.5f) - .5f;
+        position.x = Mathf.RoundToInt(position.x + .5f) - .5f;
         position.y = Mathf.RoundToInt(position.y + .5f) - .5f;
     }
 
@@ -65,6 +66,7 @@ public class MouseController : MonoBehaviour
         //Cursor
         SetCursorPosition(currentMousePosition);
 
+        var control = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -72,7 +74,7 @@ public class MouseController : MonoBehaviour
             if (dragStartMousePosition == Vector3.zero)
             {
                 dragStartMousePosition = MouseControlledCamera.ScreenToWorldPoint(Input.mousePosition);
-                DrawCursorDrag(dragStartMousePosition, dragStartMousePosition);
+                DrawCursorDrag(dragStartMousePosition, dragStartMousePosition, control);
             }
         }
 
@@ -80,15 +82,15 @@ public class MouseController : MonoBehaviour
         if (Input.GetMouseButton(0) && dragStartMousePosition != Vector3.zero)
         {
             var dragEndMousePosition = MouseControlledCamera.ScreenToWorldPoint(Input.mousePosition);
-            DrawCursorDrag(dragStartMousePosition, dragEndMousePosition);
+            DrawCursorDrag(dragStartMousePosition, dragEndMousePosition, control);
         }
 
         //End drag
-        if(Input.GetMouseButtonUp(0) && dragStartMousePosition != Vector3.zero)
+        if (Input.GetMouseButtonUp(0) && dragStartMousePosition != Vector3.zero)
         {
             var dragEndMousePosition = MouseControlledCamera.ScreenToWorldPoint(Input.mousePosition);
             HideCursorDrag();
-            BuildCursorDrag(dragStartMousePosition, dragEndMousePosition);
+            DoCursorDrag(dragStartMousePosition, dragEndMousePosition, control);
 
             dragStartMousePosition = Vector3.zero;
         }
@@ -117,7 +119,7 @@ public class MouseController : MonoBehaviour
         dragCursors.Clear();
     }
 
-    private void BuildCursorDrag(Vector3 start, Vector3 end)
+    private void DoCursorDrag(Vector3 start, Vector3 end, bool control)
     {
         var startX = Mathf.RoundToInt(start.x - .5f);
         var endX = Mathf.RoundToInt(end.x - .5f);
@@ -136,39 +138,52 @@ public class MouseController : MonoBehaviour
             endY = temp;
         }
 
-        for (var x = startX; x <= endX; x++)
+        if (!control)
         {
-            _game.Build(new Point(x, startY), TileContentType.Wall, Size.Empty);
-            _game.Build(new Point(x, endY), TileContentType.Wall, Size.Empty);
-        }
-        for (var y = startY; y <= endY; y++)
-        {
-            _game.Build(new Point(startX, y), TileContentType.Wall, Size.Empty);
-            _game.Build(new Point(endX, y), TileContentType.Wall, Size.Empty);
-        }
-        for (var x = startX+1; x <= endX-1; x++)
-        {
-            for (var y = startY+1; y <= endY-1; y++)
+            for (var x = startX; x <= endX; x++)
             {
-                _game.Build(new Point(x, y), TileContentType.None, Size.Empty);
+                _game.Build(new Point(x, startY), TileContentType.Wall, Size.Empty);
+                _game.Build(new Point(x, endY), TileContentType.Wall, Size.Empty);
+            }
+            for (var y = startY; y <= endY; y++)
+            {
+                _game.Build(new Point(startX, y), TileContentType.Wall, Size.Empty);
+                _game.Build(new Point(endX, y), TileContentType.Wall, Size.Empty);
+            }
+            for (var x = startX + 1; x <= endX - 1; x++)
+            {
+                for (var y = startY + 1; y <= endY - 1; y++)
+                {
+                    _game.Build(new Point(x, y), TileContentType.None, Size.Empty);
+                }
+            }
+        }
+        else
+        {
+            for (var x = startX; x <= endX; x++)
+            {
+                for (var y = startY; y <= endY; y++)
+                {
+                    _game.Destroy(new Point(x, y), TileContentType.None, Size.Empty);
+                }
             }
         }
     }
 
-    private void DrawCursorDrag(Vector3 start, Vector3 end)
+    private void DrawCursorDrag(Vector3 start, Vector3 end, bool control)
     {
         HideCursorDrag();
 
-        var startX = Mathf.RoundToInt(start.x+.5f)-.5f;
-        var endX = Mathf.RoundToInt(end.x+.5f) - .5f;
-        if(startX > endX)
+        var startX = Mathf.RoundToInt(start.x + .5f) - .5f;
+        var endX = Mathf.RoundToInt(end.x + .5f) - .5f;
+        if (startX > endX)
         {
             var temp = startX;
             startX = endX;
             endX = temp;
         }
-        var startY = Mathf.RoundToInt(start.y+.5f) - .5f;
-        var endY = Mathf.RoundToInt(end.y+.5f) - .5f;
+        var startY = Mathf.RoundToInt(start.y + .5f) - .5f;
+        var endY = Mathf.RoundToInt(end.y + .5f) - .5f;
         if (startY > endY)
         {
             var temp = startY;
@@ -176,23 +191,33 @@ public class MouseController : MonoBehaviour
             endY = temp;
         }
 
+        var color = Color.white;
+        if (control)
+        {
+            color = controlColor;
+        }
         for (var x = startX; x <= endX; x++)
         {
-            DrawElementOfDrag(x, startY);
-            DrawElementOfDrag(x, endY);
+            DrawElementOfDrag(x, startY, color);
+            DrawElementOfDrag(x, endY, color);
         }
         for (var y = startY; y <= endY; y++)
         {
-            DrawElementOfDrag(startX, y);
-            DrawElementOfDrag(endX, y);
+            DrawElementOfDrag(startX, y, color);
+            DrawElementOfDrag(endX, y, color);
         }
     }
 
-    private void DrawElementOfDrag(float x, float y)
+    private void DrawElementOfDrag(float x, float y, Color color)
     {
         var position = new Vector3(x, y, _defaultZ + 1);
         var go = Instantiate(cursorPrefab, position, Quaternion.identity);
         go.name = $"Cursor_{x}_{y}";
+        if (color != Color.white)
+        {
+            var renderer = go.GetComponent<SpriteRenderer>();
+            renderer.color = color;
+        }
         go.transform.parent = boxSelectorParent;
         dragCursors.Add(go);
     }

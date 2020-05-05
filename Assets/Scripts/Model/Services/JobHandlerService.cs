@@ -31,10 +31,30 @@ namespace Assets.Scripts.Model.Services
 
         public void QueueJob(JobCategory jobCategory, JobParameter parameter)
         {
+            Job job = null;
             switch (jobCategory)
             {
                 case JobCategory.Build:
-                    Jobs[jobCategory].Enqueue(new BuildJob(parameter as BuildJobParameter, _buildService));
+                    job = new BuildJob(parameter as BuildJobParameter, _buildService);
+                    if (job.Doable())
+                    {
+                        Jobs[jobCategory].Enqueue(job);
+                    }
+                    else
+                    {
+                        Debug.Log($"Job <Build> at {parameter.Coord} not doable");
+                    }
+                    break;
+                case JobCategory.Destroy:
+                    job = new DestroyJob(parameter as DestroyJobParameter, _buildService);
+                    if (job.Doable())
+                    {
+                        Jobs[jobCategory].Enqueue(job);
+                    }
+                    else
+                    {
+                        Debug.Log($"Job <Destroy> at {parameter.Coord} not doable");
+                    }
                     break;
                 default:
                     break;
@@ -55,7 +75,7 @@ namespace Assets.Scripts.Model.Services
                         yield return null;
                     }
                 }
-                yield return new WaitForSeconds(0.15f);
+                yield return new WaitForSeconds(0.005f);
             }
         }
     }

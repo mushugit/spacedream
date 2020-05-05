@@ -196,17 +196,48 @@ namespace Assets.Scripts.Model.Services.DataServices
                 var tile = _map[coord.X, coord.Y];
                 var oldContent = tile.Content;
 
-                if (oldContent != TileContentType.None && oldContent == TileContentType.None)
+                if (oldContent != TileContentType.None)
                 {
                     RemovePointToContent(oldContent, coord);
                 }
 
-                if (newContent != TileContentType.None && newContent == TileContentType.None)
+                if (newContent != TileContentType.None)
                 {
                     AddPointToContent(newContent, coord);
                 }
 
                 tile.Build(newContent, mainContentTile);
+            }
+        }
+
+        public void DestroyTile(Point coord, TileContentType targetContent, ITile mainContentTile)
+        {
+            if (IsInMap(coord))
+            {
+                var tile = _map[coord.X, coord.Y];
+                var oldContent = tile.Content;
+
+                if (targetContent != oldContent || oldContent == TileContentType.None)
+                {
+                    if (oldContent != TileContentType.None)
+                    {
+                        RemovePointToContent(oldContent, coord);
+                    }
+
+                    if (targetContent != TileContentType.None)
+                    {
+                        AddPointToContent(targetContent, coord);
+                    }
+
+                    if (oldContent == TileContentType.None)
+                    {
+                        tile.DestroyAll();
+                    }
+                    else
+                    {
+                        tile.DestroyContent();
+                    }
+                }
             }
         }
     }

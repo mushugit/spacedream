@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Tile;
+﻿using static Tile;
 
 namespace Assets.Scripts.Model.Interfaces.Data
 {
@@ -11,6 +6,7 @@ namespace Assets.Scripts.Model.Interfaces.Data
     {
         void Build(TileContentType content, ITile mainContentTile);
 
-        void Destroy();
+        void DestroyAll();
+        void DestroyContent();
     }
 }

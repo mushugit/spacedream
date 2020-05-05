@@ -2,11 +2,7 @@
 using Assets.Scripts.View.Interfaces;
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Tile;
 
 namespace Assets.Scripts.Model.Interfaces.Services
@@ -23,5 +19,6 @@ namespace Assets.Scripts.Model.Interfaces.Services
         void SubscribeAllTileTypeChanged(EventHandler<TileTypeChangedEventArgs> tileTypeChangedEventHandler);
         void SubscribeAllTileContentChanged(EventHandler<TileContentChangedEventArgs> tileContentChangedEventHandler);
         IEnumerator ExecuteJobs();
+        bool Destroy(Point coord, TileContentType targetContent, Size footprint);
     }
 }

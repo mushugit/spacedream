@@ -1,11 +1,5 @@
 ﻿using Assets.Scripts.Model.Data.Jobs.Parameters;
 using Assets.Scripts.Model.Interfaces.Data;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Assets.Scripts.Model.Data
 {
@@ -13,7 +7,7 @@ namespace Assets.Scripts.Model.Data
     {
         public enum JobState { Todo, Doing, Done }
         //TODO not fixed list of category, each category as a "theme" : rest, exercice, recreation, creation
-        public enum JobCategory { Build }
+        public enum JobCategory { Build, Destroy }
 
         public bool Assigned { get; private set; }
 
@@ -34,5 +28,6 @@ namespace Assets.Scripts.Model.Data
         }
 
         public abstract void Execute();
+        public abstract bool Doable();
     }
 }

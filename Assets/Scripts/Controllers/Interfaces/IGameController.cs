@@ -21,5 +21,6 @@ namespace Assets.Scripts.Controllers.Interfaces
         void SubscribeAllTileTypeChanged(EventHandler<TileTypeChangedEventArgs> tileTypeChangedEventHandler);
         void SubscribeAllTileContentChanged(EventHandler<TileContentChangedEventArgs> tileContentChangedEventHandler);
         bool Build(Point coord, TileContentType content, Size footprint);
+        bool Destroy(Point coord, TileContentType targetContent, Size footprint);
     }
 }

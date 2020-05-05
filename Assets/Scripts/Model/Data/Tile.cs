@@ -1,7 +1,5 @@
 ﻿using Assets.Scripts.Model.Interfaces.Data;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Drawing;
 using UnityEngine;
 
@@ -26,7 +24,7 @@ public class Tile : IBuildableTile
     #endregion
 
     public enum TileType { Space, Floor }
-    public enum TileContentType { None, Wall, Door}
+    public enum TileContentType { None, Wall, Door }
 
 
     public ITile MainContentTile { get; private set; }
@@ -92,9 +90,16 @@ public class Tile : IBuildableTile
         MainContentTile = mainContentTile;
     }
 
-    public void Destroy()
+    public void DestroyAll()
     {
+        Debug.Log($"Destroy all called");
         Type = TileType.Space;
+        DestroyContent();
+    }
+
+    public void DestroyContent()
+    {
+        Debug.Log($"Destroy content called");
         Content = TileContentType.None;
     }
 }

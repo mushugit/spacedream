@@ -42,8 +42,6 @@ namespace Assets.Scripts.Model.Services
         {
             Debug.Log("Playing game !");
             _worldService.GenerateMap(new Size(255, 255), 42);
-            //_worldService.GenerateMapFromHeightmap(new Size(255, 255), 1337, $"standard_heightmap");
-
             Playing = true;
         }
 
@@ -55,7 +53,7 @@ namespace Assets.Scripts.Model.Services
 
         public void SubscribeAllTileContentChanged(EventHandler<TileContentChangedEventArgs> tileContentChangedEventHandler)
         {
-            //_eventService
+            _eventService.SubscribeAllTileContentChanged(tileContentChangedEventHandler);
         }
 
         public ITile GetTileAt(Point coord)
@@ -77,6 +75,12 @@ namespace Assets.Scripts.Model.Services
         {
             //return _worldService.Build(coord, content, footprint);
             _jobHandlerService.QueueJob(JobCategory.Build, new BuildJobParameter(coord, content));
+            return true;
+        }
+
+        public bool Destroy(Point coord, TileContentType targetContent, Size footprint)
+        {
+            _jobHandlerService.QueueJob(JobCategory.Destroy, new DestroyJobParameter(coord, targetContent));
             return true;
         }
 

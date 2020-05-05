@@ -1,10 +1,11 @@
-﻿using UnityEngine;
-using System.Collections;
-using Assets.Scripts.View.Interfaces;
+﻿using Assets.Scripts.Controllers;
 using Assets.Scripts.Controllers.Interfaces;
-using Assets.Scripts.Controllers;
+using Assets.Scripts.View.Interfaces;
+using System.Collections;
 using System.Drawing;
+using UnityEngine;
 using static Tile;
+using Color = UnityEngine.Color;
 
 public class GameView : MonoBehaviour, IGameWaiter, IGameView
 {
@@ -17,6 +18,10 @@ public class GameView : MonoBehaviour, IGameWaiter, IGameView
     public Transform floorsParent;
     public Transform wallsParent;
     public Transform doorsParent;
+
+    private GameObject[,] GameObjectsReferences;
+
+    private readonly Color wallColor = new Color(0.2300641f, 622777f, 0.8867924f);
 
     void Awake()
     {
@@ -45,7 +50,10 @@ public class GameView : MonoBehaviour, IGameWaiter, IGameView
     public IEnumerator WaitForGamePlaying()
     {
         yield return new WaitUntil(() => _game.Playing);
-        RenderMap(_game.GetMapSize());
+
+        var mapSize = _game.GetMapSize();
+        GameObjectsReferences = new GameObject[mapSize.Width, mapSize.Height];
+        RenderMap(mapSize);
     }
 
     // Update is called once per frame
@@ -90,21 +98,21 @@ public class GameView : MonoBehaviour, IGameWaiter, IGameView
         switch (tileData.Content)
         {
             case TileContentType.Wall:
-                gameObject = Instantiate(wallSprite, coord, worldPosition);
+                gameObject = Instantiate(wallSprite, coord, worldPosition, wallColor);
                 gameObject.transform.parent = wallsParent;
                 break;
             case TileContentType.Door:
-                gameObject = Instantiate(doorSprite, coord, worldPosition);
+                gameObject = Instantiate(doorSprite, coord, worldPosition, Color.white);
                 gameObject.transform.parent = doorsParent;
                 break;
             case TileContentType.None:
                 switch (tileData.Type)
                 {
                     case TileType.Floor:
-                        gameObject = Instantiate(floorSprite, coord, worldPosition);
+                        gameObject = Instantiate(floorSprite, coord, worldPosition, Color.white);
                         break;
                     case TileType.Space:
-                        gameObject = Instantiate(null, coord, worldPosition);
+                        gameObject = Instantiate(null, coord, worldPosition, Color.white);
                         break;
                     default:
                         break;
@@ -118,15 +126,17 @@ public class GameView : MonoBehaviour, IGameWaiter, IGameView
 
     private void OnTileTypeChanged(object sender, TileTypeChangedEventArgs e)
     {
-       RenderTile(e.TileCoord);
+        RemoveGameObjectAt(e.TileCoord);
+        RenderTile(e.TileCoord);
     }
 
     private void OnTileContentChanged(object sender, TileContentChangedEventArgs e)
     {
+        RemoveGameObjectAt(e.TileCoord);
         RenderTile(e.TileCoord);
     }
 
-    private GameObject Instantiate(Sprite sprite, Point point, Vector2 position)
+    private GameObject Instantiate(Sprite sprite, Point point, Vector2 position, Color color)
     {
         var gameObject = new GameObject($"Tile_{point.X}_{point.Y}");
 
@@ -136,7 +146,20 @@ public class GameView : MonoBehaviour, IGameWaiter, IGameView
         //Sprite
         var spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
         spriteRenderer.sprite = sprite;
+        if(color != Color.white)
+        {
+            spriteRenderer.color = color;
+        }
+
+        GameObjectsReferences[point.X, point.Y] = gameObject;
 
         return gameObject;
+    }
+
+    private void RemoveGameObjectAt(Point point)
+    {
+        var gameObject = GameObjectsReferences[point.X, point.Y];
+        GameObjectsReferences[point.X, point.Y] = null;
+        Destroy(gameObject);
     }
 }
