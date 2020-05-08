@@ -12,4 +12,9 @@ public static class PointExtension
     {
         return Mathf.Sqrt(((a.X - b.X) * (a.X - b.X)) + ((a.Y - b.Y) * (a.Y - b.Y)));
     }
+
+    public static Vector2 ToVector2(this Point point)
+    {
+        return new Vector2(point.X, point.Y);
+    }
 }

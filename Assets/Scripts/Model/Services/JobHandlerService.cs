@@ -1,6 +1,7 @@
 ﻿using Assets.Scripts.Model.Data;
 using Assets.Scripts.Model.Data.Jobs;
 using Assets.Scripts.Model.Data.Jobs.Parameters;
+using Assets.Scripts.Model.Interfaces.Data;
 using Assets.Scripts.Model.Interfaces.Services;
 using System;
 using System.Collections;
@@ -31,7 +32,7 @@ namespace Assets.Scripts.Model.Services
 
         public void QueueJob(JobCategory jobCategory, JobParameter parameter)
         {
-            Job job = null;
+            Job job;
             switch (jobCategory)
             {
                 case JobCategory.Build:
@@ -77,6 +78,25 @@ namespace Assets.Scripts.Model.Services
                 }
                 yield return new WaitForSeconds(0.005f);
             }
+        }
+
+        public IAssignableJob PeekJobQueue(JobCategory jobCategory)
+        {
+            return Jobs[jobCategory].Count > 0 ? Jobs[jobCategory].Peek() : null;
+        }
+
+        public bool ExecuteJob(JobCategory jobCategory, IAssignableJob job)
+        {
+            if (job != null && Jobs[jobCategory].Count > 0)
+            {
+                if (Jobs[jobCategory].Peek() == job)
+                {
+                    Jobs[jobCategory].Dequeue();
+                    job.Execute();
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

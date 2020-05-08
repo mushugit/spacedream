@@ -2,14 +2,10 @@
 using Assets.Scripts.Model.Interfaces.Services;
 using Assets.Scripts.Model.Interfaces.Services.WorldGenerator;
 using Assets.Scripts.Model.Services.DataServices;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
+using static Tile;
 using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
@@ -36,7 +32,7 @@ namespace Assets.Scripts.Model.Services.WorldGenerators
         public void Generate(IWorldService worldservice, bool debugGeneratorTime)
         {
             Stopwatch landStopwatch = null;
-            
+
             if (debugGeneratorTime)
             {
                 landStopwatch = new Stopwatch(); ;
@@ -65,14 +61,19 @@ namespace Assets.Scripts.Model.Services.WorldGenerators
                     var point = new Point(x, y);
                     _mapService.InitTileAt(point);
 
-                    if(x >= baseStartX && x <= baseEndX && y >= baseStartY && y <= baseEndY)
+                    if (x >= baseStartX && x <= baseEndX && y >= baseStartY && y <= baseEndY)
                     {
-                        var type = Tile.TileContentType.None;
+                        var type = TileContentType.None;
                         if (x == baseStartX || x == baseEndX || y == baseStartY || y == baseEndY)
                         {
-                            type = Tile.TileContentType.Wall;
+                            type = TileContentType.Wall;
                         }
-                        _buildService.Build(point, type , Size.Empty);
+                        _buildService.Build(point, type, Size.Empty);
+                        if (type == TileContentType.None)
+                        {
+                            //Floor need template before building so we build a second time to have proper floor
+                            _buildService.Build(point, type, Size.Empty);
+                        }
                     }
                 }
             }

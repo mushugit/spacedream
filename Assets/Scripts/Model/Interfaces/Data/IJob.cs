@@ -1,10 +1,11 @@
-﻿namespace Assets.Scripts.Model.Interfaces.Data
+﻿using Assets.Scripts.Model.Data.Jobs.Parameters;
+
+namespace Assets.Scripts.Model.Interfaces.Data
 {
     public interface IJob
     {
-        bool Assigned { get; }
+        JobParameter Parameter { get; }
 
-        void Execute();
         bool Doable();
     }
 }

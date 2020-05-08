@@ -11,13 +11,37 @@ public class GameView : MonoBehaviour, IGameWaiter, IGameView
 {
     private IGameController _game;
 
-    public Sprite floorSprite;
-    public Sprite wallSprite;
-    public Sprite doorSprite;
+    [Header("Main sprites")]
+    [SerializeField]
+    public Sprite floorSprite = default;
+    [SerializeField]
+    public Sprite wallSprite = default;
+    [SerializeField]
+    public Sprite doorSprite = default;
 
-    public Transform floorsParent;
-    public Transform wallsParent;
-    public Transform doorsParent;
+    [Header("Template sprites")]
+    [SerializeField]
+    private Sprite floorTemplateSprite = default;
+    [SerializeField]
+    private Sprite wallTemplateSprite = default;
+    [SerializeField]
+    private Sprite doorTemplateSprite = default;
+
+    [Header("Parent transform main")]
+    [SerializeField]
+    private Transform floorsParent = default;
+    [SerializeField]
+    private Transform wallsParent = default;
+    [SerializeField]
+    private Transform doorsParent = default;
+
+    [Header("Parent transform templates")]
+    [SerializeField]
+    private Transform floorsTemplateParent = default;
+    [SerializeField]
+    private Transform wallsTemplateParent = default;
+    [SerializeField]
+    private Transform doorsTemplateParent = default;
 
     private GameObject[,] GameObjectsReferences;
 
@@ -56,11 +80,6 @@ public class GameView : MonoBehaviour, IGameWaiter, IGameView
         RenderMap(mapSize);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
     private void RenderMap(Size mapSize)
     {
         var stopwatch = new System.Diagnostics.Stopwatch();
@@ -92,7 +111,7 @@ public class GameView : MonoBehaviour, IGameWaiter, IGameView
         var tileData = _game.GetTileAt(coord);
         //Create content
         var worldPosition = new Vector3(coord.X + 0.5f, coord.Y + .5f, 1f);
-        GameObject gameObject = null;
+        GameObject gameObject;
 
         //TODO:Get sprite from type dynamically
         switch (tileData.Content)
@@ -101,23 +120,36 @@ public class GameView : MonoBehaviour, IGameWaiter, IGameView
                 gameObject = Instantiate(wallSprite, coord, worldPosition, wallColor);
                 gameObject.transform.parent = wallsParent;
                 break;
+            case TileContentType.WallTemplate:
+                gameObject = Instantiate(wallTemplateSprite, coord, worldPosition, Color.white);
+                gameObject.transform.parent = wallsTemplateParent;
+                break;
             case TileContentType.Door:
-                gameObject = Instantiate(doorSprite, coord, worldPosition, Color.white);
+                gameObject = Instantiate(doorSprite, coord, worldPosition, wallColor);
                 gameObject.transform.parent = doorsParent;
+                break;
+            case TileContentType.DoorTemplate:
+                gameObject = Instantiate(doorTemplateSprite, coord, worldPosition, Color.white);
+                gameObject.transform.parent = doorsTemplateParent;
                 break;
             case TileContentType.None:
                 switch (tileData.Type)
                 {
                     case TileType.Floor:
                         gameObject = Instantiate(floorSprite, coord, worldPosition, Color.white);
+                        gameObject.transform.parent = floorsParent;
+                        break;
+                    case TileType.FloorTemplate:
+                        gameObject = Instantiate(floorTemplateSprite, coord, worldPosition, Color.white);
+                        gameObject.transform.parent = floorsTemplateParent;
                         break;
                     case TileType.Space:
                         gameObject = Instantiate(null, coord, worldPosition, Color.white);
+                        gameObject.transform.parent = floorsParent;
                         break;
                     default:
                         break;
                 }
-                gameObject.transform.parent = floorsParent;
                 break;
             default:
                 break;
@@ -136,6 +168,7 @@ public class GameView : MonoBehaviour, IGameWaiter, IGameView
         RenderTile(e.TileCoord);
     }
 
+    //TODO move to helper
     private GameObject Instantiate(Sprite sprite, Point point, Vector2 position, Color color)
     {
         var gameObject = new GameObject($"Tile_{point.X}_{point.Y}");
@@ -146,7 +179,7 @@ public class GameView : MonoBehaviour, IGameWaiter, IGameView
         //Sprite
         var spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
         spriteRenderer.sprite = sprite;
-        if(color != Color.white)
+        if (color != Color.white)
         {
             spriteRenderer.color = color;
         }

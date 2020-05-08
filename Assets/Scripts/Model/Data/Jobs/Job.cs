@@ -3,7 +3,7 @@ using Assets.Scripts.Model.Interfaces.Data;
 
 namespace Assets.Scripts.Model.Data
 {
-    public abstract class Job : IAssignableJob
+    public abstract class Job : IAssignableJob, IExecutableJob
     {
         public enum JobState { Todo, Doing, Done }
         //TODO not fixed list of category, each category as a "theme" : rest, exercice, recreation, creation

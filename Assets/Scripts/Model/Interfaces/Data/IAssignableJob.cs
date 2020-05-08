@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace Assets.Scripts.Model.Interfaces.Data
 {
-    interface IAssignableJob : IJob
+    public interface IAssignableJob : IJob
     {
+        void Execute();
         void Assign();
         void Unassign();
     }

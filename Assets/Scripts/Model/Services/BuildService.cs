@@ -241,7 +241,7 @@ namespace Assets.Scripts.Model.Services
             var tileTypeChanged = true;
             var contentChanged = true;
 
-            if (oldTileType != TileType.Space)
+            if (oldTileType != TileType.Space && oldTileType!= TileType.FloorTemplate)
             {
                 tileTypeChanged = false;
             }
@@ -263,7 +263,7 @@ namespace Assets.Scripts.Model.Services
             var tileTypeChanged = true;
             var contentChanged = true;
 
-            if (oldTileType != TileType.Space)
+            if (oldTileType != TileType.Space && oldTileType != TileType.FloorTemplate)
             {
                 tileTypeChanged = false;
             }
@@ -274,7 +274,7 @@ namespace Assets.Scripts.Model.Services
             var typeChangedEvent = new TileTypeChangedEventArgs
             {
                 OldTileType = oldTileType,
-                NewTileType = TileType.Floor,
+                NewTileType = oldTileType == TileType.Space ? TileType.FloorTemplate : TileType.Floor,
                 TileCoord = coord
             };
             var contentChangedEvent = new TileContentChangedEventArgs

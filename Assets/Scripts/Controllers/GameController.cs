@@ -1,10 +1,12 @@
 ﻿using Assets.Scripts.Controllers.Interfaces;
+using Assets.Scripts.Model.Interfaces.Data;
 using Assets.Scripts.Model.Interfaces.Services;
 using Assets.Scripts.View.Interfaces;
 using LightInject;
 using System;
 using System.Drawing;
 using UnityEngine;
+using static Assets.Scripts.Model.Data.Job;
 using static Tile;
 
 namespace Assets.Scripts.Controllers
@@ -13,19 +15,19 @@ namespace Assets.Scripts.Controllers
     {
         private IGameService _gameservice;
 
-        public ServiceContainer Container { get; private set; }
+        private ServiceContainer _container;
+
+        public ICharacterController CharacterController { get; private set; }
 
         void Awake()
         {
-            Container = new ServiceContainer();
+            _container = new ServiceContainer();
+            _container.RegisterServices();
 
-            Container.RegisterServices();
-
-            _gameservice = Container.GetInstance<IGameService>();
+            _gameservice = _container.GetInstance<IGameService>();
+            CharacterController = GetComponentInChildren<ICharacterController>();
 
             _gameservice.Play();
-
-            StartCoroutine(_gameservice.ExecuteJobs());
         }
 
         public bool Playing
@@ -66,14 +68,24 @@ namespace Assets.Scripts.Controllers
             return _gameservice.GetMapSize();
         }
 
-        public bool Build(Point coord, TileContentType content, Size footprint)
+        public bool CreateBuildJob(Point coord, TileContentType content, TileContentType templateContent, Size footprint)
         {
-            return _gameservice.Build(coord, content, footprint);
+            return _gameservice.CreateBuildJob(coord, content, templateContent, footprint);
         }
 
-        public bool Destroy(Point coord, TileContentType targetContent, Size footprint)
+        public bool CreateDestroyJob(Point coord, TileContentType targetContent, Size footprint)
         {
-            return _gameservice.Destroy(coord, targetContent, footprint);
+            return _gameservice.CreateDestroyJob(coord, targetContent, footprint);
+        }
+
+        public IAssignableJob PeekJob(JobCategory jobCategory)
+        {
+            return _gameservice.PeekJob(jobCategory);
+        }
+
+        public bool DoJob(JobCategory jobCategory, IAssignableJob jobReference)
+        {
+            return _gameservice.DoJob(jobCategory, jobReference);
         }
 
     }

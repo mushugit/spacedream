@@ -8,26 +8,65 @@ using Color = UnityEngine.Color;
 
 public class MouseController : MonoBehaviour
 {
+    public enum MouseButton
+    {
+        MouseLeft = 0,
+        MouseRight = 1,
+        MouseMiddle = 2
+    }
+
+
     private Vector3 lastMousePosition;
 
     private Vector3 dragStartMousePosition;
 
-    public Camera MouseControlledCamera;
+    [SerializeField]
+    private Camera mouseControlledCamera = default;
 
     private const float OrthographicZoomMin = 8f;
     private const float OrthographicZoomMax = 33f;
 
     private IGameController _game;
 
-    public float ZoomSpeed = 2f;
-    public GameObject cursorPrefab;
-    public Transform boxSelectorParent;
+    [Header("Mouse Button config")]
+    [SerializeField]
+    private MouseButton dragDropButton = MouseButton.MouseLeft;
+    [SerializeField]
+    private MouseButton moveCameraButton = MouseButton.MouseRight;
+    [SerializeField]
+    private MouseButton moveCameraButtonAlt = MouseButton.MouseMiddle;
+    [SerializeField]
+    private MouseButton moveCharacterButton = MouseButton.MouseLeft;
+
+    private int DragDropButton { get { return (int)dragDropButton; } }
+    private int MoveCameraButton { get { return (int)moveCameraButton; } }
+    private int MoveCameraButtonAlt { get { return (int)moveCameraButtonAlt; } }
+    private int MoveCharacterButton { get { return (int)moveCharacterButton; } }
+
+    [Header("Keyboard config")]
+    [SerializeField]
+    private KeyCode destroyModifier = KeyCode.LeftControl;
+    [SerializeField]
+    private KeyCode destroyModifierAlt = KeyCode.RightControl;
+    [SerializeField]
+    private KeyCode moveCharacterModifier = KeyCode.LeftShift;
+    [SerializeField]
+    private KeyCode moveCharacterModifierAlt = KeyCode.RightShift;
+
+    [Header("Other configuration")]
+    [SerializeField]
+    private float zoomSpeed = 2f;
+    [SerializeField]
+    private GameObject cursorPrefab = default;
+    [SerializeField]
+    private Transform boxSelectorParent = default;
 
     private const float _defaultZ = -10f;
+    private readonly Vector2 _tileCenter = new Vector2(.5f, .5f);
 
     private List<GameObject> dragCursors;
 
-    private readonly Color controlColor = new Color(0.7764706f, 0.2117647f, 0.2117647f);
+    private readonly Color destroyDragDrogTint = new Color(0.7764706f, 0.2117647f, 0.2117647f);
 
     void Awake()
     {
@@ -51,62 +90,90 @@ public class MouseController : MonoBehaviour
     void Start()
     {
         var worldCenter = _game.WorldCenter;
-        MouseControlledCamera.transform.position = new Vector3(worldCenter.X, worldCenter.Y, _defaultZ);
+        mouseControlledCamera.transform.position = new Vector3(worldCenter.X, worldCenter.Y, _defaultZ);
+    }
+
+    private bool DestroyModifier()
+    {
+        return Input.GetKey(destroyModifier) || Input.GetKey(destroyModifierAlt);
+    }
+
+    private bool MoveCharacterModifier()
+    {
+        return Input.GetKey(moveCharacterModifier) || Input.GetKey(moveCharacterModifierAlt);
     }
 
     // Update is called once per frame
     void Update()
     {
-
-        //Mouse 0 : left, Mouse 1 : right, Mouse 2 : middle
-
-        var currentMousePosition = MouseControlledCamera.ScreenToWorldPoint(Input.mousePosition);
-        var currentZoom = MouseControlledCamera.orthographicSize;
+        var currentMousePosition = mouseControlledCamera.ScreenToWorldPoint(Input.mousePosition);
+        var currentZoom = mouseControlledCamera.orthographicSize;
 
         //Cursor
         SetCursorPosition(currentMousePosition);
 
-        var control = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+        var destroyModifier = DestroyModifier();
+        var moveCharacterModifier = MoveCharacterModifier(); ;
 
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(DragDropButton))
         {
-            //Start drag
-            if (dragStartMousePosition == Vector3.zero)
+            if (!moveCharacterModifier)
             {
-                dragStartMousePosition = MouseControlledCamera.ScreenToWorldPoint(Input.mousePosition);
-                DrawCursorDrag(dragStartMousePosition, dragStartMousePosition, control);
+                //Start drag
+                if (dragStartMousePosition == Vector3.zero)
+                {
+                    dragStartMousePosition = mouseControlledCamera.ScreenToWorldPoint(Input.mousePosition);
+                    DrawCursorDrag(dragStartMousePosition, dragStartMousePosition, destroyModifier);
+                }
+            }
+        }
+
+        if (Input.GetMouseButtonDown(MoveCharacterButton))
+        {
+            if (moveCharacterModifier)
+            {
+                //Order move
+                Vector2 currentMousePosition2D = currentMousePosition;
+                currentMousePosition2D -= _tileCenter;
+                _game.CharacterController.ForceMove(currentMousePosition2D.ToPoint());
             }
         }
 
         //Continue drag
-        if (Input.GetMouseButton(0) && dragStartMousePosition != Vector3.zero)
+        if (Input.GetMouseButton(DragDropButton) && dragStartMousePosition != Vector3.zero)
         {
-            var dragEndMousePosition = MouseControlledCamera.ScreenToWorldPoint(Input.mousePosition);
-            DrawCursorDrag(dragStartMousePosition, dragEndMousePosition, control);
+            if (!moveCharacterModifier)
+            {
+                var dragEndMousePosition = mouseControlledCamera.ScreenToWorldPoint(Input.mousePosition);
+                DrawCursorDrag(dragStartMousePosition, dragEndMousePosition, destroyModifier);
+            }
         }
 
         //End drag
-        if (Input.GetMouseButtonUp(0) && dragStartMousePosition != Vector3.zero)
+        if (Input.GetMouseButtonUp(DragDropButton) && dragStartMousePosition != Vector3.zero)
         {
-            var dragEndMousePosition = MouseControlledCamera.ScreenToWorldPoint(Input.mousePosition);
-            HideCursorDrag();
-            DoCursorDrag(dragStartMousePosition, dragEndMousePosition, control);
+            if (!moveCharacterModifier)
+            {
+                var dragEndMousePosition = mouseControlledCamera.ScreenToWorldPoint(Input.mousePosition);
+                HideCursorDrag();
+                DoCursorDrag(dragStartMousePosition, dragEndMousePosition, destroyModifier);
 
-            dragStartMousePosition = Vector3.zero;
+                dragStartMousePosition = Vector3.zero;
+            }
         }
 
-        if (Input.GetMouseButton(1) || Input.GetMouseButton(2))
+        if (Input.GetMouseButton(MoveCameraButton) || Input.GetMouseButton(MoveCameraButtonAlt))
         {
             var mouseMovement = lastMousePosition - currentMousePosition;
             //TODO: Delegate camera handling to Camera controller
-            MouseControlledCamera.transform.Translate(mouseMovement);
+            mouseControlledCamera.transform.Translate(mouseMovement);
         }
 
         var scrollZoomDelta = Input.mouseScrollDelta.y;
 
-        MouseControlledCamera.orthographicSize = Mathf.Clamp(currentZoom + (-scrollZoomDelta * ZoomSpeed), OrthographicZoomMin, OrthographicZoomMax);
+        mouseControlledCamera.orthographicSize = Mathf.Clamp(currentZoom + (-scrollZoomDelta * zoomSpeed), OrthographicZoomMin, OrthographicZoomMax);
 
-        lastMousePosition = MouseControlledCamera.ScreenToWorldPoint(Input.mousePosition);
+        lastMousePosition = mouseControlledCamera.ScreenToWorldPoint(Input.mousePosition);
     }
 
     private void HideCursorDrag()
@@ -142,19 +209,19 @@ public class MouseController : MonoBehaviour
         {
             for (var x = startX; x <= endX; x++)
             {
-                _game.Build(new Point(x, startY), TileContentType.Wall, Size.Empty);
-                _game.Build(new Point(x, endY), TileContentType.Wall, Size.Empty);
+                _game.CreateBuildJob(new Point(x, startY), TileContentType.Wall, TileContentType.WallTemplate, Size.Empty);
+                _game.CreateBuildJob(new Point(x, endY), TileContentType.Wall, TileContentType.WallTemplate, Size.Empty);
             }
             for (var y = startY; y <= endY; y++)
             {
-                _game.Build(new Point(startX, y), TileContentType.Wall, Size.Empty);
-                _game.Build(new Point(endX, y), TileContentType.Wall, Size.Empty);
+                _game.CreateBuildJob(new Point(startX, y), TileContentType.Wall, TileContentType.WallTemplate, Size.Empty);
+                _game.CreateBuildJob(new Point(endX, y), TileContentType.Wall, TileContentType.WallTemplate, Size.Empty);
             }
             for (var x = startX + 1; x <= endX - 1; x++)
             {
                 for (var y = startY + 1; y <= endY - 1; y++)
                 {
-                    _game.Build(new Point(x, y), TileContentType.None, Size.Empty);
+                    _game.CreateBuildJob(new Point(x, y), TileContentType.None, TileContentType.None, Size.Empty);
                 }
             }
         }
@@ -164,7 +231,7 @@ public class MouseController : MonoBehaviour
             {
                 for (var y = startY; y <= endY; y++)
                 {
-                    _game.Destroy(new Point(x, y), TileContentType.None, Size.Empty);
+                    _game.CreateDestroyJob(new Point(x, y), TileContentType.None, Size.Empty);
                 }
             }
         }
@@ -194,7 +261,7 @@ public class MouseController : MonoBehaviour
         var color = Color.white;
         if (control)
         {
-            color = controlColor;
+            color = destroyDragDrogTint;
         }
         for (var x = startX; x <= endX; x++)
         {

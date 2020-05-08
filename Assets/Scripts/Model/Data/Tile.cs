@@ -1,7 +1,6 @@
 ﻿using Assets.Scripts.Model.Interfaces.Data;
 using System;
 using System.Drawing;
-using UnityEngine;
 
 public class Tile : IBuildableTile
 {
@@ -23,8 +22,8 @@ public class Tile : IBuildableTile
     public event EventHandler<TileContentChangedEventArgs> TileContentChanged;
     #endregion
 
-    public enum TileType { Space, Floor }
-    public enum TileContentType { None, Wall, Door }
+    public enum TileType { Space, Floor, FloorTemplate }
+    public enum TileContentType { None, Wall, WallTemplate, Door, DoorTemplate }
 
 
     public ITile MainContentTile { get; private set; }
@@ -85,21 +84,19 @@ public class Tile : IBuildableTile
 
     public void Build(TileContentType content, ITile mainContentTile)
     {
-        Type = TileType.Floor;
+        Type = (Type == TileType.Space) ? TileType.FloorTemplate : TileType.Floor;
         Content = content;
         MainContentTile = mainContentTile;
     }
 
     public void DestroyAll()
     {
-        Debug.Log($"Destroy all called");
         Type = TileType.Space;
         DestroyContent();
     }
 
     public void DestroyContent()
     {
-        Debug.Log($"Destroy content called");
         Content = TileContentType.None;
     }
 }

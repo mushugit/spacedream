@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.Model.Data.Jobs.Parameters;
+﻿using Assets.Scripts.Model.Data;
+using Assets.Scripts.Model.Data.Jobs.Parameters;
 using Assets.Scripts.Model.Interfaces;
 using Assets.Scripts.Model.Interfaces.Data;
 using Assets.Scripts.Model.Interfaces.Services;
@@ -71,22 +72,28 @@ namespace Assets.Scripts.Model.Services
             return _worldService.Size;
         }
 
-        public bool Build(Point coord, TileContentType content, Size footprint)
+        public bool CreateBuildJob(Point coord, TileContentType content, TileContentType templateContent, Size footprint)
         {
-            //return _worldService.Build(coord, content, footprint);
+            _worldService.Build(coord, templateContent, footprint);
             _jobHandlerService.QueueJob(JobCategory.Build, new BuildJobParameter(coord, content));
             return true;
         }
 
-        public bool Destroy(Point coord, TileContentType targetContent, Size footprint)
+        public bool CreateDestroyJob(Point coord, TileContentType targetContent, Size footprint)
         {
+            //TODO display destroy job (red cross ?)
             _jobHandlerService.QueueJob(JobCategory.Destroy, new DestroyJobParameter(coord, targetContent));
             return true;
         }
 
-        public IEnumerator ExecuteJobs()
+        public IAssignableJob PeekJob(JobCategory jobCategory)
         {
-            yield return _jobHandlerService.ExecuteQueues();
+            return _jobHandlerService.PeekJobQueue(jobCategory);
+        }
+
+        public bool DoJob(JobCategory jobCategory, IAssignableJob jobReference)
+        {
+            return _jobHandlerService.ExecuteJob(jobCategory, jobReference);
         }
     }
 }
