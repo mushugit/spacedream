@@ -288,7 +288,6 @@ namespace Assets.Scripts.Model.Services
             {
                 _buildableMapService.BuildOnTile(coord, content, mainContentTile);
             }
-
             if (tileTypeChanged)
             {
                 OnTileTypeChanged(tile, typeChangedEvent);

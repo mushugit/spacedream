@@ -19,6 +19,7 @@ namespace Assets.Scripts.Model.Interfaces
         bool Build(Point coord, TileContentType content, Size footprint, ITile mainContentTile = null);
         void SubscribeAllTileTypeChanged(EventHandler<TileTypeChangedEventArgs> tileTypeChangedEventHandler);
         void SubscribeAllTileContentChanged(EventHandler<TileContentChangedEventArgs> tileContentChangedEventHandler);
+        List<(Point coord, ITile tile)> GetNeighbours(Point coord);
 
         Point BaseCenter { get; }
     }

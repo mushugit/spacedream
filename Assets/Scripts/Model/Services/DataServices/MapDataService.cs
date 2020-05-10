@@ -1,12 +1,8 @@
 ﻿using Assets.Scripts.Model.Interfaces.Data;
 using Assets.Scripts.Model.Interfaces.Services;
 using Assets.Scripts.View.Interfaces;
-using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using static Tile;
 

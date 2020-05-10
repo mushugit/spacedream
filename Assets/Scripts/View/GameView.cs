@@ -1,7 +1,9 @@
 ﻿using Assets.Scripts.Controllers;
 using Assets.Scripts.Controllers.Interfaces;
 using Assets.Scripts.View.Interfaces;
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Drawing;
 using UnityEngine;
 using static Tile;
@@ -14,42 +16,35 @@ public class GameView : MonoBehaviour, IGameWaiter, IGameView
     [Header("Main sprites")]
     [SerializeField]
     public Sprite floorSprite = default;
-    [SerializeField]
-    public Sprite wallSprite = default;
-    [SerializeField]
-    public Sprite doorSprite = default;
 
     [Header("Template sprites")]
     [SerializeField]
     private Sprite floorTemplateSprite = default;
     [SerializeField]
     private Sprite wallTemplateSprite = default;
-    [SerializeField]
-    private Sprite doorTemplateSprite = default;
 
     [Header("Parent transform main")]
     [SerializeField]
     private Transform floorsParent = default;
-    [SerializeField]
-    private Transform wallsParent = default;
-    [SerializeField]
-    private Transform doorsParent = default;
 
     [Header("Parent transform templates")]
     [SerializeField]
     private Transform floorsTemplateParent = default;
     [SerializeField]
     private Transform wallsTemplateParent = default;
-    [SerializeField]
-    private Transform doorsTemplateParent = default;
 
     private GameObject[,] GameObjectsReferences;
 
-    private readonly Color wallColor = new Color(0.2300641f, 622777f, 0.8867924f);
+    private IWallView _wallView;
 
     void Awake()
     {
         _game = GetComponentInParent<GameController>() as IGameController;
+    }
+
+    public void RegisterWallView(IWallView wallView)
+    {
+        _wallView = wallView;
     }
 
     // Start is called before the first frame update
@@ -106,6 +101,21 @@ public class GameView : MonoBehaviour, IGameWaiter, IGameView
         Debug.Log($"Map rendered in {stopwatch.Elapsed}");
     }
 
+    public void SubscribeSpecificContentTypeChanged(TileContentType contentType, EventHandler<TileContentChangedEventArgs> tileContentChangedEventHandler)
+    {
+        _game.SubscribeSpecificTileContentChanged(contentType, tileContentChangedEventHandler);
+    }
+
+    public ITileView GetTileAt(Point coord)
+    {
+        return _game.GetTileAt(coord);
+    }
+
+    public List<(Point coord, ITileView tile)> GetNeighbours(Point coord)
+    {
+        return _game.GetNeighbours(coord);
+    }
+
     private void RenderTile(Point coord)
     {
         var tileData = _game.GetTileAt(coord);
@@ -117,20 +127,12 @@ public class GameView : MonoBehaviour, IGameWaiter, IGameView
         switch (tileData.Content)
         {
             case TileContentType.Wall:
-                gameObject = Instantiate(wallSprite, coord, worldPosition, wallColor);
-                gameObject.transform.parent = wallsParent;
+                //Only for initial render
+                _wallView.RenderTile(coord);
                 break;
             case TileContentType.WallTemplate:
                 gameObject = Instantiate(wallTemplateSprite, coord, worldPosition, Color.white);
                 gameObject.transform.parent = wallsTemplateParent;
-                break;
-            case TileContentType.Door:
-                gameObject = Instantiate(doorSprite, coord, worldPosition, wallColor);
-                gameObject.transform.parent = doorsParent;
-                break;
-            case TileContentType.DoorTemplate:
-                gameObject = Instantiate(doorTemplateSprite, coord, worldPosition, Color.white);
-                gameObject.transform.parent = doorsTemplateParent;
                 break;
             case TileContentType.None:
                 switch (tileData.Type)
@@ -162,10 +164,13 @@ public class GameView : MonoBehaviour, IGameWaiter, IGameView
         RenderTile(e.TileCoord);
     }
 
-    private void OnTileContentChanged(object sender, TileContentChangedEventArgs e)
+    public void OnTileContentChanged(object sender, TileContentChangedEventArgs e)
     {
-        RemoveGameObjectAt(e.TileCoord);
-        RenderTile(e.TileCoord);
+        if (e.OldContent != TileContentType.Wall && e.NewContent != TileContentType.Wall)
+        {
+            RemoveGameObjectAt(e.TileCoord);
+            RenderTile(e.TileCoord);
+        }
     }
 
     //TODO move to helper
@@ -184,12 +189,16 @@ public class GameView : MonoBehaviour, IGameWaiter, IGameView
             spriteRenderer.color = color;
         }
 
-        GameObjectsReferences[point.X, point.Y] = gameObject;
-
+        AddGameobjectReference(point, gameObject);
         return gameObject;
     }
 
-    private void RemoveGameObjectAt(Point point)
+    public void AddGameobjectReference(Point coord, GameObject gameobject)
+    {
+        GameObjectsReferences[coord.X, coord.Y] = gameobject;
+    }
+
+    public void RemoveGameObjectAt(Point point)
     {
         var gameObject = GameObjectsReferences[point.X, point.Y];
         GameObjectsReferences[point.X, point.Y] = null;

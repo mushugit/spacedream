@@ -18,6 +18,7 @@ public class Tile : IBuildableTile
         public TileContentType NewContent { get; set; }
     }
 
+    //TODO unused? 
     public event EventHandler<TileTypeChangedEventArgs> TileTypeChanged;
     public event EventHandler<TileContentChangedEventArgs> TileContentChanged;
     #endregion

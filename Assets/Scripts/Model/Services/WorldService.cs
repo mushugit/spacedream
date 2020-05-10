@@ -97,6 +97,11 @@ public class WorldService : IWorldService
         return _mapService.GetTileCoord(tile);
     }
 
+    public List<(Point coord, ITile tile)> GetNeighbours(Point coord)
+    {
+        return _mapService.GetNeighbours(coord);
+    }
+
     public bool Build(Point coord, TileContentType content, Size footprint, ITile mainContentTile = null)
     {
         return _buildService.Build(coord, content, footprint, mainContentTile);

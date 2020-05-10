@@ -1,16 +1,12 @@
-﻿using Assets.Scripts.Model.Data;
+﻿using Assets.Scripts.Controllers;
 using Assets.Scripts.Model.Data.Jobs.Parameters;
 using Assets.Scripts.Model.Interfaces;
 using Assets.Scripts.Model.Interfaces.Data;
 using Assets.Scripts.Model.Interfaces.Services;
 using Assets.Scripts.View.Interfaces;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using static Assets.Scripts.Model.Data.Job;
 using static Tile;
@@ -39,6 +35,11 @@ namespace Assets.Scripts.Model.Services
             _jobHandlerService = jobHandlerService;
         }
 
+        public void RegisterJobExecutor(IJobExecutorController jobExecutorController)
+        {
+            _jobHandlerService.RegisterJobExecutor(jobExecutorController);
+        }
+
         public void Play()
         {
             Debug.Log("Playing game !");
@@ -57,9 +58,19 @@ namespace Assets.Scripts.Model.Services
             _eventService.SubscribeAllTileContentChanged(tileContentChangedEventHandler);
         }
 
+        public void SubscribeSpecificTileContentChanged(TileContentType contentType, EventHandler<TileContentChangedEventArgs> tileContentChangedEventHandler)
+        {
+            _eventService.SubscribeAllTileSpecificContentChanged(contentType, tileContentChangedEventHandler);
+        }
+
         public ITile GetTileAt(Point coord)
         {
             return _worldService.GetTileAt(coord);
+        }
+
+        public List<(Point coord, ITile tile)> GetNeighbours(Point coord)
+        {
+            return _worldService.GetNeighbours(coord);
         }
 
         public Point GetTileCoord(ITileView tile)
@@ -91,9 +102,9 @@ namespace Assets.Scripts.Model.Services
             return _jobHandlerService.PeekJobQueue(jobCategory);
         }
 
-        public bool DoJob(JobCategory jobCategory, IAssignableJob jobReference)
+        public bool DoJob(JobCategory jobCategory, IAssignableJob jobReference, Action callback = null)
         {
-            return _jobHandlerService.ExecuteJob(jobCategory, jobReference);
+            return _jobHandlerService.ExecuteJob(jobCategory, jobReference, callback);
         }
     }
 }

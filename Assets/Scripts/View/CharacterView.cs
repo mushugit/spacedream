@@ -1,5 +1,6 @@
 ﻿using Assets.Scripts.Controllers;
 using Assets.Scripts.Controllers.Interfaces;
+using Assets.Scripts.Utilities.Unity.Interface;
 using Assets.Scripts.View.Interfaces;
 using System;
 using System.Collections;
@@ -20,6 +21,9 @@ namespace Assets.Scripts.View
         [SerializeField]
         private Transform characterParentTransform;
 
+        [SerializeField]
+        private string sortingLayerName = default;
+
         private bool renderCharacter;
         private GameObject characterGO;
         private float _totalLerpDuration;
@@ -32,7 +36,7 @@ namespace Assets.Scripts.View
         void Awake()
         {
             _game = GetComponentInParent<GameController>() as IGameController;
-            _character = GetComponentInParent<CharacterController>() as IUpdatableCharacterController;
+            _character = GetComponentInParent<GameCharacterController>() as IUpdatableCharacterController;
             renderCharacter = false;
         }
 
@@ -76,6 +80,7 @@ namespace Assets.Scripts.View
         {
             if (renderCharacter)
             {
+                //Moving
                 if (!_destination.HasValue)
                 {
                     return;
@@ -111,6 +116,7 @@ namespace Assets.Scripts.View
             //Sprite
             var spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
             spriteRenderer.sprite = sprite;
+            spriteRenderer.sortingLayerName = sortingLayerName;
             if (color != Color.white)
             {
                 spriteRenderer.color = color;

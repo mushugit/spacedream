@@ -1,7 +1,7 @@
-﻿using Assets.Scripts.Model.Data;
+﻿using Assets.Scripts.Controllers;
 using Assets.Scripts.Model.Data.Jobs.Parameters;
 using Assets.Scripts.Model.Interfaces.Data;
-using System.Collections;
+using System;
 using static Assets.Scripts.Model.Data.Job;
 
 namespace Assets.Scripts.Model.Interfaces.Services
@@ -11,6 +11,7 @@ namespace Assets.Scripts.Model.Interfaces.Services
         void QueueJob(JobCategory jobCategory, JobParameter parameter);
 
         IAssignableJob PeekJobQueue(JobCategory jobCategory);
-        bool ExecuteJob(JobCategory jobCategory, IAssignableJob job);
+        bool ExecuteJob(JobCategory jobCategory, IAssignableJob job, Action callback = null);
+        void RegisterJobExecutor(IJobExecutorController jobExecutorController);
     }
 }

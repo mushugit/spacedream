@@ -28,6 +28,9 @@ namespace Assets.Scripts.Model.Data
         }
 
         public abstract void Execute();
+
+        public abstract float ExecuteTime { get; protected set; }
+        public abstract JobCategory Category { get; protected set; }
         public abstract bool Doable();
     }
 }

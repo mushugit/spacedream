@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.Model.Data;
+﻿using Assets.Scripts.Controllers;
+using Assets.Scripts.Model.Data;
 using Assets.Scripts.Model.Data.Jobs;
 using Assets.Scripts.Model.Data.Jobs.Parameters;
 using Assets.Scripts.Model.Interfaces.Data;
@@ -15,6 +16,7 @@ namespace Assets.Scripts.Model.Services
     class JobHandlerService : IJobHandlerService
     {
         private readonly IBuildService _buildService;
+        private IJobExecutorController _jobExecutorController;
 
         private readonly Dictionary<JobCategory, Queue<Job>> Jobs;
         public JobHandlerService(IBuildService buildService)
@@ -28,6 +30,11 @@ namespace Assets.Scripts.Model.Services
             {
                 Jobs.Add(jobCategory, new Queue<Job>());
             }
+        }
+
+        public void RegisterJobExecutor(IJobExecutorController jobExecutorController)
+        {
+            _jobExecutorController = jobExecutorController;
         }
 
         public void QueueJob(JobCategory jobCategory, JobParameter parameter)
@@ -72,7 +79,7 @@ namespace Assets.Scripts.Model.Services
                     if (Jobs[jobCategory].Count > 0)
                     {
                         var job = Jobs[jobCategory].Dequeue();
-                        job.Execute();
+                        ExecuteJob(job);
                         yield return null;
                     }
                 }
@@ -85,18 +92,24 @@ namespace Assets.Scripts.Model.Services
             return Jobs[jobCategory].Count > 0 ? Jobs[jobCategory].Peek() : null;
         }
 
-        public bool ExecuteJob(JobCategory jobCategory, IAssignableJob job)
+        public bool ExecuteJob(JobCategory jobCategory, IAssignableJob job, Action callback = null)
         {
             if (job != null && Jobs[jobCategory].Count > 0)
             {
-                if (Jobs[jobCategory].Peek() == job)
+                var executableJob = Jobs[jobCategory].Peek();
+                if (executableJob == job)
                 {
                     Jobs[jobCategory].Dequeue();
-                    job.Execute();
+                    ExecuteJob(executableJob, callback);
                     return true;
                 }
             }
             return false;
+        }
+
+        private void ExecuteJob(IExecutableJob job, Action callback = null)
+        {
+            _jobExecutorController.ExecuteJob(job, callback);
         }
     }
 }

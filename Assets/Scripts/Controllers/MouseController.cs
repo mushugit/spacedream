@@ -207,31 +207,66 @@ public class MouseController : MonoBehaviour
 
         if (!control)
         {
+            //Wall anti clockwise to have "logical" build order
+            //south wall, ascending x
             for (var x = startX; x <= endX; x++)
             {
                 _game.CreateBuildJob(new Point(x, startY), TileContentType.Wall, TileContentType.WallTemplate, Size.Empty);
-                _game.CreateBuildJob(new Point(x, endY), TileContentType.Wall, TileContentType.WallTemplate, Size.Empty);
             }
-            for (var y = startY; y <= endY; y++)
+            //east wall, ascending y
+            for (var y = startY + 1; y <= endY - 1; y++)
             {
-                _game.CreateBuildJob(new Point(startX, y), TileContentType.Wall, TileContentType.WallTemplate, Size.Empty);
                 _game.CreateBuildJob(new Point(endX, y), TileContentType.Wall, TileContentType.WallTemplate, Size.Empty);
             }
-            for (var x = startX + 1; x <= endX - 1; x++)
+            //north wall, descending x
+            for (var x = endX; x >= startX; x--)
             {
-                for (var y = startY + 1; y <= endY - 1; y++)
+                _game.CreateBuildJob(new Point(x, endY), TileContentType.Wall, TileContentType.WallTemplate, Size.Empty);
+            }
+            //west wall, descending y
+            for (var y = endY - 1; y >= startY + 1; y--)
+            {
+                _game.CreateBuildJob(new Point(startX, y), TileContentType.Wall, TileContentType.WallTemplate, Size.Empty);
+            }
+
+            var parity = 1;
+            for (var y = startY + 1; y <= endY - 1; y++)
+            {
+                if (parity % 2 == 1)
                 {
-                    _game.CreateBuildJob(new Point(x, y), TileContentType.None, TileContentType.None, Size.Empty);
+                    for (var x = startX + 1; x <= endX - 1; x++)
+                    {
+                        _game.CreateBuildJob(new Point(x, y), TileContentType.None, TileContentType.None, Size.Empty);
+                    }
                 }
+                else
+                {
+                    for (var x = endX - 1; x >= startX + 1; x--)
+                    {
+                        _game.CreateBuildJob(new Point(x, y), TileContentType.None, TileContentType.None, Size.Empty);
+                    }
+                }
+                parity++;
             }
         }
         else
         {
-            for (var x = startX; x <= endX; x++)
+            var parity = 1;
+            for (var y = startY; y <= endY; y++)
             {
-                for (var y = startY; y <= endY; y++)
+                if (parity % 2 == 1)
                 {
-                    _game.CreateDestroyJob(new Point(x, y), TileContentType.None, Size.Empty);
+                    for (var x = startX; x <= endX; x++)
+                    {
+                        _game.CreateDestroyJob(new Point(x, y), TileContentType.None, Size.Empty);
+                    }
+                }
+                else
+                {
+                    for (var x = endX; x >= startX; x--)
+                    {
+                        _game.CreateDestroyJob(new Point(x, y), TileContentType.None, Size.Empty);
+                    }
                 }
             }
         }

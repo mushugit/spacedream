@@ -4,6 +4,7 @@ using Assets.Scripts.Model.Interfaces.Services;
 using Assets.Scripts.View.Interfaces;
 using LightInject;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using UnityEngine;
 using static Assets.Scripts.Model.Data.Job;
@@ -16,8 +17,9 @@ namespace Assets.Scripts.Controllers
         private IGameService _gameservice;
 
         private ServiceContainer _container;
+        private IJobExecutorController _jobExecutorController;
 
-        public ICharacterController CharacterController { get; private set; }
+        public IGameCharacterController CharacterController { get; private set; }
 
         void Awake()
         {
@@ -25,7 +27,9 @@ namespace Assets.Scripts.Controllers
             _container.RegisterServices();
 
             _gameservice = _container.GetInstance<IGameService>();
-            CharacterController = GetComponentInChildren<ICharacterController>();
+            CharacterController = GetComponentInChildren<IGameCharacterController>();
+
+            DelayedRegisterJobExecutor();
 
             _gameservice.Play();
         }
@@ -53,6 +57,11 @@ namespace Assets.Scripts.Controllers
             _gameservice.SubscribeAllTileContentChanged(tileContentChangedEventHandler);
         }
 
+        public void SubscribeSpecificTileContentChanged(TileContentType contentType, EventHandler<TileContentChangedEventArgs> tileContentChangedEventHandler)
+        {
+            _gameservice.SubscribeSpecificTileContentChanged(contentType, tileContentChangedEventHandler);
+        }
+
         public ITileView GetTileAt(Point coord)
         {
             return _gameservice.GetTileAt(coord);
@@ -61,6 +70,21 @@ namespace Assets.Scripts.Controllers
         public Point GetTileCoord(ITileView tile)
         {
             return _gameservice.GetTileCoord(tile);
+        }
+
+        public List<(Point coord, ITileView tile)> GetNeighbours(Point coord)
+        {
+            var originalList = _gameservice.GetNeighbours(coord);
+            var newList = new List<(Point coord, ITileView tile)>(originalList.Count);
+
+            foreach ((var localCoord, var tile) in originalList)
+            {
+                newList.Add((localCoord, tile));
+            }
+            return newList;
+
+
+            //return _gameservice.GetNeighbours(coord).Cast<(Point coord, ITileView tile)>().ToList();
         }
 
         public Size GetMapSize()
@@ -83,10 +107,19 @@ namespace Assets.Scripts.Controllers
             return _gameservice.PeekJob(jobCategory);
         }
 
-        public bool DoJob(JobCategory jobCategory, IAssignableJob jobReference)
+        public bool DoJob(JobCategory jobCategory, IAssignableJob jobReference, Action callback = null)
         {
-            return _gameservice.DoJob(jobCategory, jobReference);
+            return _gameservice.DoJob(jobCategory, jobReference, callback);
         }
 
+        public void RegisterJobExecutor(IJobExecutorController jobExecutorController)
+        {
+            _jobExecutorController = jobExecutorController;
+        }
+
+        private void DelayedRegisterJobExecutor()
+        {
+            _gameservice.RegisterJobExecutor(_jobExecutorController);
+        }
     }
 }
